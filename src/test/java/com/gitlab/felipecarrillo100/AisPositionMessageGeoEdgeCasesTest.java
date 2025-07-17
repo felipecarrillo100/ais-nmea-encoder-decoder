@@ -1,30 +1,28 @@
 package com.gitlab.felipecarrillo100;
+
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class AisPositionMessageGeoEdgeCasesTest {
 
-    private AisEncoder encoder;
-    private AisDecoder decoder;
+    private AisEncoder encoder = new AisEncoder();
+    private AisDecoder decoder = new AisDecoder();
 
     // To capture decoded messages from the async callbacks
     private final BlockingQueue<AisPositionMessage> positionMessages = new LinkedBlockingQueue<>();
     private final BlockingQueue<AisStaticMessage> staticMessages = new LinkedBlockingQueue<>();
 
-    @BeforeEach
-    public void setup() {
-        encoder = new AisEncoder();
-        decoder = new AisDecoder();
-
-        // Setup callbacks to capture decoded messages
+    public AisPositionMessageGeoEdgeCasesTest() {
         decoder.setPositionCallback(positionMessages::offer);
         decoder.setStaticCallback(staticMessages::offer);
+    }
 
+    @BeforeEach
+    public void setup() {
         positionMessages.clear();
         staticMessages.clear();
     }
