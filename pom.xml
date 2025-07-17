@@ -1,14 +1,30 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.gitlab.felipecarrillo100</groupId>
+  <groupId>io.github.felipecarrillo100</groupId>
   <artifactId>ais-nmea-encoder-decoder</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
 
-  <name>ais-nmea-encoder-decoder</name>
-  <url>http://maven.apache.org</url>
+  <name>AIS NMEA Encoder Decoder</name>
+  <description>Java library to encode and decode AIS NMEA messages</description>
+  <url>https://github.com/felipecarrillo100/ais-nmea-encoder-decoder</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/felipecarrillo100/ais-nmea-encoder-decoder</url>
+    <connection>scm:git:git://github.com/felipecarrillo100/ais-nmea-encoder-decoder.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/felipecarrillo100/ais-nmea-encoder-decoder.git</developerConnection>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,4 +40,77 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <developers>
+    <developer>
+      <id>felipecarrillo100</id>
+      <name>Felipe Carrillo</name>
+      <email>felipecarrillo100@gmail.com</email>
+      <organization>io.github.felipecarrillo100</organization>
+      <organizationUrl>https://github.com/felipecarrillo100</organizationUrl>
+    </developer>
+  </developers>
+
+  <build>
+    <plugins>
+      <!-- GPG signing -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Central publishing plugin -->
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.7.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>true</autoPublish>
+          <waitUntil>published</waitUntil>
+        </configuration>
+      </plugin>
+
+      <!-- Source jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Javadoc jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
