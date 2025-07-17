@@ -23,7 +23,12 @@ public class AisEncoder {
         }
     }
 
-    // Write an unsigned integer as a bit string of length bits
+    /**
+     * Write an unsigned integer as a bit string of length bits.
+     * @param value unsigned integer to encode
+     * @param bits number of bits for the output bit string
+     * @return bit string representing the unsigned integer
+     */
     private static String writeInt(int value, int bits) {
         StringBuilder sb = new StringBuilder(bits);
         for (int i = bits - 1; i >= 0; i--) {
@@ -32,7 +37,13 @@ public class AisEncoder {
         return sb.toString();
     }
 
-    // Write a signed integer as two's complement bit string of length bits
+    /**
+     * Write a signed integer as two's complement bit string of length bits.
+     * @param value signed integer to encode
+     * @param bits number of bits for the output bit string
+     * @return bit string representing the signed integer
+     * @throws IllegalArgumentException if bits < 1 or value out of range
+     */
     private static String writeSignedInt(int value, int bits) {
         if (bits < 1) throw new IllegalArgumentException("Bits must be >= 1");
         int maxPos = (1 << (bits - 1)) - 1;
@@ -48,7 +59,12 @@ public class AisEncoder {
         }
     }
 
-    // Encode a string to AIS 6-bit bit string, padded/truncated to maxBits length
+    /**
+     * Encode a string to AIS 6-bit bit string, padded/truncated to maxBits length.
+     * @param str input string to encode
+     * @param maxBits maximum number of bits in output bit string
+     * @return AIS 6-bit encoded bit string
+     */
     private static String encodeStringTo6Bit(String str, int maxBits) {
         int maxChars = maxBits / 6;
         StringBuilder bits = new StringBuilder(maxBits);
@@ -64,7 +80,9 @@ public class AisEncoder {
     }
 
     /**
-     * Encode AIS Position Message (Type 1) into bit string
+     * Encode AIS Position Message (Type 1) into bit string.
+     * @param msg AIS position message object
+     * @return bit string representing encoded position message
      */
     public static String encodePositionMessageToBitString(AisPositionMessage msg) {
         int repeat = msg.getRepeat() != null ? msg.getRepeat() : 0;
@@ -102,7 +120,9 @@ public class AisEncoder {
     }
 
     /**
-     * Encode AIS Static Message (Type 5) into bit string
+     * Encode AIS Static Message (Type 5) into bit string.
+     * @param msg AIS static message object
+     * @return bit string representing encoded static message
      */
     public static String encodeStaticMessageToBitString(AisStaticMessage msg) {
         int repeat = msg.getRepeat() != null ? msg.getRepeat() : 0;
@@ -137,7 +157,9 @@ public class AisEncoder {
     }
 
     /**
-     * Encode position message into AIS NMEA sentences
+     * Encode position message into AIS NMEA sentences.
+     * @param msg AIS position message to encode
+     * @return list of AIS NMEA sentences encoding the position message
      */
     public static List<String> encodePositionMessage(AisPositionMessage msg) {
         String bits = encodePositionMessageToBitString(msg);
@@ -149,7 +171,9 @@ public class AisEncoder {
     }
 
     /**
-     * Encode static message into AIS NMEA sentences
+     * Encode static message into AIS NMEA sentences.
+     * @param msg AIS static message to encode
+     * @return list of AIS NMEA sentences encoding the static message
      */
     public static List<String> encodeStaticMessage(AisStaticMessage msg) {
         String bits = encodeStaticMessageToBitString(msg);
@@ -161,7 +185,11 @@ public class AisEncoder {
     }
 
     /**
-     * Encode a bit string payload into one or multiple AIS NMEA sentences
+     * Encode a bit string payload into one or multiple AIS NMEA sentences.
+     * @param bits bit string payload to encode
+     * @param messageType AIS message type number
+     * @param channel AIS radio channel (usually 'A' or 'B')
+     * @return list of NMEA AIS sentences encoding the payload
      */
     private static List<String> encodePayload(String bits, int messageType, char channel) {
         bits = padBitsToMultipleOf6(bits);
@@ -187,7 +215,11 @@ public class AisEncoder {
         return sentences;
     }
 
-    // Pad bits with '0' to multiple of 6 length
+    /**
+     * Pad bits with '0' to multiple of 6 length.
+     * @param bits input bit string
+     * @return bit string padded to multiple of 6 bits
+     */
     private static String padBitsToMultipleOf6(String bits) {
         int remainder = bits.length() % 6;
         if (remainder == 0) return bits;
@@ -197,7 +229,11 @@ public class AisEncoder {
         return sb.toString();
     }
 
-    // Convert bit string to AIS 6-bit ASCII payload string
+    /**
+     * Convert bit string to AIS 6-bit ASCII payload string.
+     * @param bits input bit string
+     * @return AIS 6-bit ASCII encoded string
+     */
     private static String bitsTo6BitAscii(String bits) {
         StringBuilder sb = new StringBuilder(bits.length() / 6);
         for (int i = 0; i < bits.length(); i += 6) {
@@ -208,14 +244,23 @@ public class AisEncoder {
         return sb.toString();
     }
 
-    // Map 6-bit value to AIS 6-bit ASCII char per ITU-R M.1371
+    /**
+     * Map 6-bit value to AIS 6-bit ASCII char per ITU-R M.1371.
+     * @param val 6-bit integer value (0-63)
+     * @return AIS 6-bit ASCII character
+     * @throws IllegalArgumentException if val out of range
+     */
     private static char sixBitToChar(int val) {
         if (val < 0 || val > 63) throw new IllegalArgumentException("6-bit value out of range: " + val);
         if (val < 40) return (char) (val + 48);
         else return (char) (val + 56);
     }
 
-    // Calculate XOR checksum for NMEA sentence excluding leading '!' and trailing checksum
+    /**
+     * Calculate XOR checksum for NMEA sentence excluding leading '!' and trailing checksum.
+     * @param sentence NMEA sentence without checksum part
+     * @return two-hex-digit checksum string
+     */
     private static String calculateChecksum(String sentence) {
         int checksum = 0;
         // start after '!' (index 1), stop before '*'

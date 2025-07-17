@@ -5,23 +5,55 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * AIS Decoder that processes AIS NMEA sentences,
+ * supports multipart messages, and decodes AIS types 1-3 and 5.
+ * Uses callbacks to deliver decoded AIS position and static messages.
+ */
 public class AisDecoder {
 
+    /**
+     * Timeout in milliseconds after which incomplete multipart buffers are discarded.
+     */
     private static final long MULTIPART_TIMEOUT_MS = 30000;
 
+    /**
+     * Map storing multipart message buffers keyed by sequence ID.
+     */
     private final Map<String, MultipartBufferEntry> multipartBuffers = new HashMap<>();
 
+    /**
+     * Callback consumer invoked on decoded AIS position messages (types 1-3).
+     */
     private Consumer<AisPositionMessage> positionCallback;
+
+    /**
+     * Callback consumer invoked on decoded AIS static messages (type 5).
+     */
     private Consumer<AisStaticMessage> staticCallback;
 
+    /**
+     * Sets the callback to receive decoded AIS position messages.
+     * @param callback Consumer that accepts AisPositionMessage
+     */
     public void setPositionCallback(Consumer<AisPositionMessage> callback) {
         this.positionCallback = callback;
     }
 
+    /**
+     * Sets the callback to receive decoded AIS static messages.
+     * @param callback Consumer that accepts AisStaticMessage
+     */
     public void setStaticCallback(Consumer<AisStaticMessage> callback) {
         this.staticCallback = callback;
     }
 
+    /**
+     * Processes a single AIS NMEA sentence.
+     * Handles single and multipart messages, verifies checksum, decodes bits,
+     * and calls appropriate callbacks.
+     * @param sentence AIS NMEA sentence string
+     */
     public void onSentence(String sentence) {
         if (sentence == null) return;
 
@@ -84,6 +116,9 @@ public class AisDecoder {
         }
     }
 
+    /**
+     * Internal buffer structure to hold multipart message pieces.
+     */
     private static class MultipartBufferEntry {
         int total;
         Map<Integer, String> receivedParts = new HashMap<>();
@@ -95,6 +130,11 @@ public class AisDecoder {
         }
     }
 
+    /**
+     * Verifies the checksum of an AIS NMEA sentence.
+     * @param sentence AIS sentence string
+     * @return true if checksum matches, false otherwise
+     */
     private boolean verifyChecksum(String sentence) {
         int starIndex = sentence.indexOf('*');
         if (starIndex == -1 || starIndex + 3 > sentence.length()) return false;
@@ -108,6 +148,13 @@ public class AisDecoder {
         return calculated.equals(expected);
     }
 
+    /**
+     * Converts AIS 6-bit ASCII payload to a bit string,
+     * removing specified number of fill bits at the end.
+     * @param payload AIS 6-bit ASCII encoded payload
+     * @param fillBits number of fill bits to remove from the end
+     * @return bit string representation of the payload
+     */
     private String payloadToBits(String payload, int fillBits) {
         StringBuilder bits = new StringBuilder();
         for (char c : payload.toCharArray()) {
@@ -121,6 +168,13 @@ public class AisDecoder {
         return bits.toString();
     }
 
+    /**
+     * Processes decoded bits string by determining message type,
+     * decoding into the appropriate message object,
+     * and invoking the registered callbacks.
+     * @param bits decoded AIS bit string
+     * @param channel NMEA channel ("A" or "B")
+     */
     private void processBits(String bits, String channel) {
         if (bits.length() < 40) return;
 
@@ -136,6 +190,14 @@ public class AisDecoder {
         }
     }
 
+    /**
+     * Decodes AIS position message (types 1-3) from bit string.
+     * @param bits AIS bit string
+     * @param type AIS message type (1-3)
+     * @param mmsi MMSI number
+     * @param channel NMEA channel
+     * @return decoded AisPositionMessage or null if bits insufficient
+     */
     private AisPositionMessage decodePosition(String bits, int type, int mmsi, String channel) {
         if (bits.length() < 168) return null;
         AisPositionMessage msg = new AisPositionMessage();
@@ -160,6 +222,13 @@ public class AisDecoder {
         return msg;
     }
 
+    /**
+     * Decodes AIS static message (type 5) from bit string.
+     * @param bits AIS bit string
+     * @param mmsi MMSI number
+     * @param channel NMEA channel
+     * @return decoded AisStaticMessage or null if bits insufficient
+     */
     private AisStaticMessage decodeType5(String bits, int mmsi, String channel) {
         if (bits.length() < 424) return null;
         AisStaticMessage msg = new AisStaticMessage();
@@ -176,7 +245,8 @@ public class AisDecoder {
         msg.setDimensionToStern(readUInt(bits, 249, 9));
         msg.setDimensionToPort(readUInt(bits, 258, 6));
         msg.setDimensionToStarboard(readUInt(bits, 264, 6));
-        // epfd is omitted, as per your original POJO
+        // epfd is set after ship type per original POJO order
+        msg.setEpfd(readUInt(bits, 230, 4));
         msg.setEtaMonth(readUInt(bits, 274, 4));
         msg.setEtaDay(readUInt(bits, 278, 5));
         msg.setEtaHour(readUInt(bits, 283, 5));
@@ -184,17 +254,30 @@ public class AisDecoder {
         msg.setDraught(readUInt(bits, 294, 8) / 10.0);
         msg.setDestination(decodeText(bits, 302, 20));
         msg.setDteAvailable(readUInt(bits, 422, 1) == 0);
-        msg.setEpfd(readUInt(bits, 230, 4));
         msg.setChannel(channel);
 
         return msg;
     }
 
+    /**
+     * Reads an unsigned integer from bits substring.
+     * @param bits bit string
+     * @param start start index (inclusive)
+     * @param length number of bits
+     * @return unsigned integer value
+     */
     private int readUInt(String bits, int start, int length) {
         if (start + length > bits.length()) return 0;
         return Integer.parseInt(bits.substring(start, start + length), 2);
     }
 
+    /**
+     * Reads a signed integer from bits substring using two's complement.
+     * @param bits bit string
+     * @param start start index (inclusive)
+     * @param length number of bits
+     * @return signed integer value
+     */
     private int readInt(String bits, int start, int length) {
         if (start + length > bits.length()) return 0;
         String segment = bits.substring(start, start + length);
@@ -210,6 +293,14 @@ public class AisDecoder {
         }
     }
 
+    /**
+     * Decodes 6-bit ASCII encoded text from bits.
+     * Uses the AIS character table.
+     * @param bits bit string
+     * @param start start index (inclusive)
+     * @param lengthChars number of characters to decode
+     * @return decoded text string with trailing '@' characters removed and trimmed
+     */
     private String decodeText(String bits, int start, int lengthChars) {
         final String table = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_ !\"#$%&'()*+,-./0123456789:;<=>?";
 
