@@ -59,4 +59,7 @@ MIT License — see LICENSE file.
 
 ---
 
-For detailed API and examples, see [project documentation].
+## Documentation
+
+For more information, visit the GitHub repository:  
+👉 **[https://github.com/felipecarrillo100/ais-nmea-encoder-decoder](https://github.com/felipecarrillo100/ais-nmea-encoder-decoder)**
