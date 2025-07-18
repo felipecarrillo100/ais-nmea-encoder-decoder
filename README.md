@@ -1,6 +1,5 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.felipecarrillo100/ais-nmea-encoder-decoder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.felipecarrillo100/ais-nmea-encoder-decoder)
-
 # AIS Encoder and Decoder Library
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.felipecarrillo100/ais-nmea-encoder-decoder/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.felipecarrillo100/ais-nmea-encoder-decoder)
 
 This Java library provides encoding and decoding for AIS (Automatic Identification System) messages, supporting AIS message types 1 (Position Reports) and 5 (Static and Voyage Data). It includes multipart message assembly, checksum verification, and conforms to ITU-R M.1371 specifications.
 
