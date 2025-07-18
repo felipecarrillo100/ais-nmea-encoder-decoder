@@ -20,11 +20,27 @@ This Java library provides encoding and decoding for AIS (Automatic Identificati
 Use the `AisEncoder` class to encode AIS message objects into NMEA sentences:
 
 ```java
+        // Create and set up position message
 AisPositionMessage position = new AisPositionMessage();
-// set fields...
+// TODO: set required fields on position, e.g.
+// position.setMmsi(123456789);
+// position.setLat(40.7128);
+// position.setLon(-74.0060);
+// ... etc.
 
-List<String> sentences = AisEncoder.encodePositionMessage(position);
-sentences.forEach(System.out::println);
+List<String> positionSentences = AisEncoder.encodePositionMessage(position);
+        positionSentences.forEach(System.out::println);
+
+// Create and set up static message
+AisStaticMessage staticMessage = new AisStaticMessage();
+// TODO: set required fields on staticMessage, e.g.
+// staticMessage.setMmsi(123456789);
+// staticMessage.setName("My Vessel");
+// staticMessage.setCallsign("CALL123");
+// ... etc.
+
+List<String> staticSentences = AisEncoder.encodeStaticMessage(staticMessage);
+        staticSentences.forEach(System.out::println);
 ```
 
 ### Decoding
