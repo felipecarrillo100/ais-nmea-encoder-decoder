@@ -130,26 +130,42 @@ public class AisEncoder {
         int epfd = msg.getEpfd() != null ? msg.getEpfd() : 0;
         int dteAvailable = (msg.getDteAvailable() != null && !msg.getDteAvailable()) ? 1 : 0; // inverted per spec
 
+        String callsign = msg.getCallsign() != null ? msg.getCallsign() : "";
+        String name = msg.getName() != null ? msg.getName() : "";
+        String destination = msg.getDestination() != null ? msg.getDestination() : "";
+
+        int imo = msg.getImo() != null ? msg.getImo() : 0;
+        int shipType = msg.getShipType() != null ? msg.getShipType() : 0;
+        int dimToBow = msg.getDimensionToBow() != null ? msg.getDimensionToBow() : 0;
+        int dimToStern = msg.getDimensionToStern() != null ? msg.getDimensionToStern() : 0;
+        int dimToPort = msg.getDimensionToPort() != null ? msg.getDimensionToPort() : 0;
+        int dimToStarboard = msg.getDimensionToStarboard() != null ? msg.getDimensionToStarboard() : 0;
+        int etaMonth = msg.getEtaMonth() != null ? msg.getEtaMonth() : 0;
+        int etaDay = msg.getEtaDay() != null ? msg.getEtaDay() : 0;
+        int etaHour = msg.getEtaHour() != null ? msg.getEtaHour() : 24;    // 24 = not available
+        int etaMinute = msg.getEtaMinute() != null ? msg.getEtaMinute() : 60; // 60 = not available
+        double draughtVal = msg.getDraught() != null ? msg.getDraught() : 0.0;
+
         StringBuilder bits = new StringBuilder(424);
         bits.append(writeInt(5, 6));
         bits.append(writeInt(repeat, 2));
         bits.append(writeInt(msg.getMmsi(), 30));
         bits.append(writeInt(aisVersion, 2));
-        bits.append(writeInt(msg.getImo(), 30));
-        bits.append(encodeStringTo6Bit(msg.getCallsign(), 42));
-        bits.append(encodeStringTo6Bit(msg.getName(), 120));
-        bits.append(writeInt(msg.getShipType(), 8));
-        bits.append(writeInt(msg.getDimensionToBow(), 9));
-        bits.append(writeInt(msg.getDimensionToStern(), 9));
-        bits.append(writeInt(msg.getDimensionToPort(), 6));
-        bits.append(writeInt(msg.getDimensionToStarboard(), 6));
+        bits.append(writeInt(imo, 30));
+        bits.append(encodeStringTo6Bit(callsign, 42));
+        bits.append(encodeStringTo6Bit(name, 120));
+        bits.append(writeInt(shipType, 8));
+        bits.append(writeInt(dimToBow, 9));
+        bits.append(writeInt(dimToStern, 9));
+        bits.append(writeInt(dimToPort, 6));
+        bits.append(writeInt(dimToStarboard, 6));
         bits.append(writeInt(epfd, 4));
-        bits.append(writeInt(msg.getEtaMonth(), 4));
-        bits.append(writeInt(msg.getEtaDay(), 5));
-        bits.append(writeInt(msg.getEtaHour(), 5));
-        bits.append(writeInt(msg.getEtaMinute(), 6));
-        bits.append(writeInt((int) Math.floor(msg.getDraught() * 10), 8));
-        bits.append(encodeStringTo6Bit(msg.getDestination(), 120));
+        bits.append(writeInt(etaMonth, 4));
+        bits.append(writeInt(etaDay, 5));
+        bits.append(writeInt(etaHour, 5));
+        bits.append(writeInt(etaMinute, 6));
+        bits.append(writeInt((int) Math.floor(draughtVal * 10), 8));
+        bits.append(encodeStringTo6Bit(destination, 120));
         bits.append(writeInt(dteAvailable, 1));
         bits.append(writeInt(0, 1)); // spare
 
